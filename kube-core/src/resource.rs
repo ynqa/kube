@@ -1,12 +1,24 @@
+#[cfg(feature = "use-k8s-pb")]
+pub use k8s_pb::apimachinery::pkg::apis::meta::v1::ObjectMeta;
+#[cfg(feature = "use-k8s-pb")]
+use k8s_pb::{
+    api::core::v1::ObjectReference,
+    apimachinery::pkg::apis::meta::v1::{ManagedFieldsEntry, OwnerReference, Time},
+};
+#[cfg(feature = "use-k8s-pb")]
+pub use k8s_pb::{ClusterResourceScope, NamespaceResourceScope, ResourceScope, SubResourceScope};
+
+#[cfg(not(feature = "use-k8s-pb"))]
 pub use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
+#[cfg(not(feature = "use-k8s-pb"))]
 use k8s_openapi::{
     api::core::v1::ObjectReference,
     apimachinery::pkg::apis::meta::v1::{ManagedFieldsEntry, OwnerReference, Time},
 };
+#[cfg(not(feature = "use-k8s-pb"))]
+pub use k8s_openapi::{ClusterResourceScope, NamespaceResourceScope, ResourceScope, SubResourceScope};
 
 use std::{borrow::Cow, collections::BTreeMap};
-
-pub use k8s_openapi::{ClusterResourceScope, NamespaceResourceScope, ResourceScope, SubResourceScope};
 
 /// Indicates that a [`Resource`] is of an indeterminate dynamic scope.
 pub struct DynamicResourceScope {}

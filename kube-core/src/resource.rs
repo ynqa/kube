@@ -116,14 +116,26 @@ pub trait Resource {
     /// this Option can be safely unwrapped.
     fn controller_owner_ref(&self, dt: &Self::DynamicType) -> Option<OwnerReference> {
         let meta = self.meta();
-        Some(OwnerReference {
-            api_version: Self::api_version(dt).to_string(),
-            kind: Self::kind(dt).to_string(),
-            name: meta.name.clone()?,
-            uid: meta.uid.clone()?,
-            controller: Some(true),
-            ..OwnerReference::default()
-        })
+        Some(
+            #[cfg(feature = "use-k8s-pb")]
+            OwnerReference {
+                api_version: Some(Self::api_version(dt).to_string()),
+                kind: Some(Self::kind(dt).to_string()),
+                name: Some(meta.name.clone()?),
+                uid: Some(meta.uid.clone()?),
+                controller: Some(true),
+                ..OwnerReference::default()
+            },
+            #[cfg(not(feature = "use-k8s-pb"))]
+            OwnerReference {
+                api_version: Self::api_version(dt).to_string(),
+                kind: Self::kind(dt).to_string(),
+                name: meta.name.clone()?,
+                uid: meta.uid.clone()?,
+                controller: Some(true),
+                ..OwnerReference::default()
+            },
+        )
     }
 }
 
@@ -225,7 +237,9 @@ pub trait ResourceExt: Resource {
 
 // TODO: replace with ordinary static when BTreeMap::new() is no longer
 // const-unstable.
+#[cfg(not(feature = "use-k8s-pb"))]
 use once_cell::sync::Lazy;
+#[cfg(not(feature = "use-k8s-pb"))]
 static EMPTY_MAP: Lazy<BTreeMap<String, String>> = Lazy::new(BTreeMap::new);
 
 impl<K: Resource> ResourceExt for K {
@@ -258,42 +272,112 @@ impl<K: Resource> ResourceExt for K {
     }
 
     fn labels(&self) -> &BTreeMap<String, String> {
-        self.meta().labels.as_ref().unwrap_or(&*EMPTY_MAP)
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &self.meta().labels
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta().labels.as_ref().unwrap_or(&*EMPTY_MAP)
+        }
     }
 
     fn labels_mut(&mut self) -> &mut BTreeMap<String, String> {
-        self.meta_mut().labels.get_or_insert_with(BTreeMap::new)
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &mut self.meta_mut().labels
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta_mut().labels.get_or_insert_with(BTreeMap::new)
+        }
     }
 
     fn annotations(&self) -> &BTreeMap<String, String> {
-        self.meta().annotations.as_ref().unwrap_or(&*EMPTY_MAP)
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &self.meta().annotations
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta().annotations.as_ref().unwrap_or(&*EMPTY_MAP)
+        }
     }
 
     fn annotations_mut(&mut self) -> &mut BTreeMap<String, String> {
-        self.meta_mut().annotations.get_or_insert_with(BTreeMap::new)
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &mut self.meta_mut().annotations
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta_mut().annotations.get_or_insert_with(BTreeMap::new)
+        }
     }
 
     fn owner_references(&self) -> &[OwnerReference] {
-        self.meta().owner_references.as_deref().unwrap_or_default()
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &self.meta().owner_references
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta().owner_references.as_deref().unwrap_or_default()
+        }
     }
 
     fn owner_references_mut(&mut self) -> &mut Vec<OwnerReference> {
-        self.meta_mut().owner_references.get_or_insert_with(Vec::new)
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &mut self.meta_mut().owner_references
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta_mut().owner_references.get_or_insert_with(Vec::new)
+        }
     }
 
     fn finalizers(&self) -> &[String] {
-        self.meta().finalizers.as_deref().unwrap_or_default()
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &self.meta().finalizers
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta().finalizers.as_deref().unwrap_or_default()
+        }
     }
 
     fn finalizers_mut(&mut self) -> &mut Vec<String> {
-        self.meta_mut().finalizers.get_or_insert_with(Vec::new)
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &mut self.meta_mut().finalizers
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta_mut().finalizers.get_or_insert_with(Vec::new)
+        }
     }
 
     fn managed_fields(&self) -> &[ManagedFieldsEntry] {
-        self.meta().managed_fields.as_deref().unwrap_or_default()
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &self.meta().managed_fields
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta().managed_fields.as_deref().unwrap_or_default()
+        }
     }
 
     fn managed_fields_mut(&mut self) -> &mut Vec<ManagedFieldsEntry> {
-        self.meta_mut().managed_fields.get_or_insert_with(Vec::new)
+        #[cfg(feature = "use-k8s-pb")]
+        {
+            &mut self.meta_mut().managed_fields
+        }
+        #[cfg(not(feature = "use-k8s-pb"))]
+        {
+            self.meta_mut().managed_fields.get_or_insert_with(Vec::new)
+        }
     }
 }

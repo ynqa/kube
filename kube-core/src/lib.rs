@@ -18,8 +18,8 @@
 
 // pub mod discovery;
 
-// pub mod duration;
-// pub use duration::Duration;
+pub mod duration;
+pub use duration::Duration;
 
 // pub mod dynamic;
 // pub use dynamic::{ApiResource, DynamicObject};
@@ -47,12 +47,12 @@ pub use resource::{
     SubResourceScope,
 };
 
-// pub mod response;
-// pub use response::Status;
+pub mod response;
+pub use response::Status;
 
-// #[cfg_attr(docsrs, doc(cfg(feature = "schema")))]
-// #[cfg(feature = "schema")]
-// pub mod schema;
+#[cfg_attr(docsrs, doc(cfg(feature = "schema")))]
+#[cfg(feature = "schema")]
+pub mod schema;
 
 // pub mod subresource;
 
@@ -61,8 +61,8 @@ pub use resource::{
 // pub mod watch;
 // pub use watch::WatchEvent;
 
-// mod error;
-// pub use error::ErrorResponse;
+mod error;
+pub use error::ErrorResponse;
 
-// mod version;
-// pub use version::Version;
+mod version;
+pub use version::Version;

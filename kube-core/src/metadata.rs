@@ -1,10 +1,17 @@
 //! Metadata structs used in traits, lists, and dynamic objects.
 use std::{borrow::Cow, marker::PhantomData};
 
+#[cfg(feature = "use-k8s-pb")]
+pub use k8s_pb::apimachinery::pkg::apis::meta::v1::{ListMeta, ObjectMeta};
+
+#[cfg(not(feature = "use-k8s-pb"))]
 pub use k8s_openapi::apimachinery::pkg::apis::meta::v1::{ListMeta, ObjectMeta};
+
 use serde::{Deserialize, Serialize};
 
-use crate::{DynamicObject, Resource};
+#[cfg(not(feature = "use-k8s-pb"))]
+use crate::DynamicObject;
+use crate::Resource;
 
 /// Type information that is flattened into every kubernetes object
 #[derive(Deserialize, Serialize, Clone, Default, Debug, Eq, PartialEq, Hash)]
@@ -59,17 +66,19 @@ impl TypeMeta {
 /// schema without knowing the details of the version.
 ///
 /// See the [`PartialObjectMetaExt`] trait for how to construct one safely.
-#[derive(Deserialize, Serialize, Clone, Default, Debug)]
-#[serde(rename_all = "camelCase")]
+#[cfg(not(feature = "use-k8s-pb"))]
+#[derive(Clone, Default, Debug)]
+#[cfg_attr(not(feature = "use-k8s-pb"), derive(Deserialize, Serialize))]
+#[cfg_attr(not(feature = "use-k8s-pb"), serde(rename_all = "camelCase"))]
 pub struct PartialObjectMeta<K = DynamicObject> {
     /// The type fields, not always present
-    #[serde(flatten, default)]
+    #[cfg_attr(not(feature = "use-k8s-pb"), serde(flatten, default))]
     pub types: Option<TypeMeta>,
     /// Standard object's metadata
-    #[serde(default)]
+    #[cfg_attr(not(feature = "use-k8s-pb"), serde(default))]
     pub metadata: ObjectMeta,
     /// Type information for static dispatch
-    #[serde(skip, default)]
+    #[cfg_attr(not(feature = "use-k8s-pb"), serde(skip, default))]
     pub _phantom: PhantomData<K>,
 }
 
@@ -77,6 +86,8 @@ mod private {
     pub trait Sealed {}
     impl Sealed for super::ObjectMeta {}
 }
+
+#[cfg(not(feature = "use-k8s-pb"))]
 /// Helper trait for converting `ObjectMeta` into useful `PartialObjectMeta` variants
 pub trait PartialObjectMetaExt: private::Sealed {
     /// Convert `ObjectMeta` into a Patch-serializable `PartialObjectMeta`
@@ -122,6 +133,7 @@ pub trait PartialObjectMetaExt: private::Sealed {
     fn into_response_partial<K>(self) -> PartialObjectMeta<K>;
 }
 
+#[cfg(not(feature = "use-k8s-pb"))]
 impl PartialObjectMetaExt for ObjectMeta {
     fn into_request_partial<K: Resource<DynamicType = ()>>(self) -> PartialObjectMeta<K> {
         PartialObjectMeta {
@@ -146,6 +158,7 @@ impl PartialObjectMetaExt for ObjectMeta {
     }
 }
 
+#[cfg(not(feature = "use-k8s-pb"))]
 impl<K: Resource> Resource for PartialObjectMeta<K> {
     type DynamicType = K::DynamicType;
     type Scope = K::Scope;

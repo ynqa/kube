@@ -16,22 +16,26 @@
 
 // pub mod conversion;
 
-// pub mod discovery;
+pub mod discovery;
 
 pub mod duration;
 pub use duration::Duration;
 
-// pub mod dynamic;
-// pub use dynamic::{ApiResource, DynamicObject};
+#[cfg(not(feature = "use-k8s-pb"))]
+pub mod dynamic;
+#[cfg(not(feature = "use-k8s-pb"))]
+pub use dynamic::{ApiResource, DynamicObject};
 
 // pub mod crd;
 // pub use crd::CustomResourceExt;
 
-// pub mod gvk;
-// pub use gvk::{GroupVersion, GroupVersionKind, GroupVersionResource};
+pub mod gvk;
+pub use gvk::{GroupVersion, GroupVersionKind, GroupVersionResource};
 
-// pub mod metadata;
-// pub use metadata::{ListMeta, ObjectMeta, PartialObjectMeta, PartialObjectMetaExt, TypeMeta};
+pub mod metadata;
+#[cfg(not(feature = "use-k8s-pb"))]
+pub use metadata::{PartialObjectMeta, PartialObjectMetaExt};
+pub use metadata::{ListMeta, ObjectMeta, TypeMeta};
 
 // pub mod object;
 // pub use object::{NotUsed, Object, ObjectList};

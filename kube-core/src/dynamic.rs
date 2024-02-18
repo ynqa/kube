@@ -7,7 +7,9 @@ use crate::{
     resource::{DynamicResourceScope, Resource},
 };
 
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
+#[cfg(feature = "use-k8s-pb")]
+use k8s_pb::apimachinery::pkg::apis::meta::v1::ObjectMeta;
+
 use std::borrow::Cow;
 use thiserror::Error;
 
